@@ -24,7 +24,6 @@ public class AuthController {
     }
     @PostMapping("/login")
     public String login(@RequestBody @Valid LoginRequestDTO request) {
-        authService.login(request);
-        return "Login realizado com sucesso";
+        return authService.login(request);
     }
 }
