@@ -5,6 +5,8 @@ import com.testeTecnicoBackend.SeaTecnologia.entity.User;
 import com.testeTecnicoBackend.SeaTecnologia.enums.Role;
 import com.testeTecnicoBackend.SeaTecnologia.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.testeTecnicoBackend.SeaTecnologia.dto.auth.LoginRequestDTO;
 
 import java.time.LocalDateTime;
 
@@ -12,9 +14,11 @@ import java.time.LocalDateTime;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public void register(RegisterRequestDTO request) {
@@ -25,12 +29,25 @@ public class AuthService {
         User user = User.builder()
                 .name(request.name())
                 .email(request.email())
-                .passwordHash(request.password())
+                .passwordHash(passwordEncoder.encode(request.password()))
                 .role(Role.CLIENT)
                 .enabled(true)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);
+    }
+    public void login(LoginRequestDTO request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));
+
+        boolean passwordMatches = passwordEncoder.matches(
+                request.password(),
+                user.getPasswordHash()
+        );
+
+        if (!passwordMatches) {
+            throw new RuntimeException("Email ou senha inválidos");
+        }
     }
 }

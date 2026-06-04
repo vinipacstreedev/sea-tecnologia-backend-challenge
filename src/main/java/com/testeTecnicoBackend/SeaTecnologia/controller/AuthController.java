@@ -5,6 +5,7 @@ import com.testeTecnicoBackend.SeaTecnologia.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import com.testeTecnicoBackend.SeaTecnologia.dto.auth.LoginRequestDTO;
 
 @RestController
 @RequestMapping("/auth")
@@ -20,5 +21,10 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public void register(@RequestBody @Valid RegisterRequestDTO request) {
         authService.register(request);
+    }
+    @PostMapping("/login")
+    public String login(@RequestBody @Valid LoginRequestDTO request) {
+        authService.login(request);
+        return "Login realizado com sucesso";
     }
 }
