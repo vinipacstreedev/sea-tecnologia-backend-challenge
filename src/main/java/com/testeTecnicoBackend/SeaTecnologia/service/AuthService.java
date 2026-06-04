@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.testeTecnicoBackend.SeaTecnologia.dto.auth.LoginRequestDTO;
 import com.testeTecnicoBackend.SeaTecnologia.security.JwtService;
+import com.testeTecnicoBackend.SeaTecnologia.dto.auth.LoginResponseDTO;
 
 import java.time.LocalDateTime;
 
@@ -44,7 +45,7 @@ public class AuthService {
 
         userRepository.save(user);
     }
-    public String login(LoginRequestDTO request) {
+    public LoginResponseDTO login(LoginRequestDTO request) {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));
 
@@ -56,6 +57,8 @@ public class AuthService {
         if (!passwordMatches) {
             throw new RuntimeException("Email ou senha inválidos");
         }
-        return jwtService.generateToken(user.getEmail());
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new LoginResponseDTO(token);
     }
 }

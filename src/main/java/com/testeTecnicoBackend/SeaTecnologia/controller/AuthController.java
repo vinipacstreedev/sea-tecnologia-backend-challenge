@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.testeTecnicoBackend.SeaTecnologia.dto.auth.LoginRequestDTO;
+import com.testeTecnicoBackend.SeaTecnologia.dto.auth.LoginResponseDTO;
 
 @RestController
 @RequestMapping("/auth")
@@ -23,7 +24,7 @@ public class AuthController {
         authService.register(request);
     }
     @PostMapping("/login")
-    public String login(@RequestBody @Valid LoginRequestDTO request) {
+    public LoginResponseDTO login(@RequestBody @Valid LoginRequestDTO request) {
         return authService.login(request);
     }
 }
