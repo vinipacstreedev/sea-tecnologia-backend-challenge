@@ -1,18 +1,18 @@
 package com.testeTecnicoBackend.SeaTecnologia.service;
 
+import com.testeTecnicoBackend.SeaTecnologia.dto.solicitation.*;
 import com.testeTecnicoBackend.SeaTecnologia.entity.Solicitation;
 import com.testeTecnicoBackend.SeaTecnologia.entity.User;
 import com.testeTecnicoBackend.SeaTecnologia.enums.SolicitationStatus;
 import com.testeTecnicoBackend.SeaTecnologia.repository.SolicitationRepository;
 import org.springframework.stereotype.Service;
-import com.testeTecnicoBackend.SeaTecnologia.dto.solicitation.Step1RequestDTO;
+
 import java.util.UUID;
 import java.time.LocalDateTime;
-import com.testeTecnicoBackend.SeaTecnologia.dto.solicitation.Step2RequestDTO;
-import com.testeTecnicoBackend.SeaTecnologia.dto.solicitation.ViaCepResponseDTO;
-import com.testeTecnicoBackend.SeaTecnologia.dto.solicitation.Step3RequestDTO;
+
 import com.testeTecnicoBackend.SeaTecnologia.enums.Priority;
 import java.math.BigDecimal;
+import java.util.List;
 
 import java.time.LocalDateTime;
 
@@ -22,6 +22,10 @@ public class SolicitationService {
     private final SolicitationRepository solicitationRepository;
 
     private final ViaCepService viaCepService;
+
+    public List<Solicitation> findMySolicitations(User client) {
+        return solicitationRepository.findByClient(client);
+    }
 
     public SolicitationService(
             SolicitationRepository solicitationRepository,
@@ -174,5 +178,109 @@ public class SolicitationService {
         solicitation.setUpdatedAt(LocalDateTime.now());
 
         return solicitationRepository.save(solicitation);
+    }
+    public List<Solicitation> findSubmittedSolicitations() {
+        return solicitationRepository.findByStatus(
+                SolicitationStatus.SUBMITTED
+        );
+    }
+    public Solicitation startAnalysis(UUID solicitationId, User analyst) {
+
+        Solicitation solicitation = solicitationRepository.findById(solicitationId)
+                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada"));
+
+        if (solicitation.getStatus() != SolicitationStatus.SUBMITTED) {
+            throw new RuntimeException("A solicitação não está aguardando análise");
+        }
+
+        solicitation.setStatus(SolicitationStatus.IN_REVIEW);
+
+        solicitation.setAnalyzedBy(analyst);
+
+        solicitation.setUpdatedAt(LocalDateTime.now());
+
+        return solicitationRepository.save(solicitation);
+    }
+    public Solicitation approve(
+            UUID solicitationId,
+            User analyst,
+            AnalysisDecisionDTO request
+    ) {
+
+        Solicitation solicitation = solicitationRepository.findById(solicitationId)
+                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada"));
+
+        if (solicitation.getStatus() != SolicitationStatus.IN_REVIEW) {
+            throw new RuntimeException("A solicitação não está em análise");
+        }
+
+        if (solicitation.getAnalyzedBy() == null ||
+                !solicitation.getAnalyzedBy().getId().equals(analyst.getId())) {
+
+            throw new RuntimeException(
+                    "Somente o analista responsável pode aprovar"
+            );
+        }
+
+        solicitation.setStatus(
+                SolicitationStatus.APPROVED
+        );
+
+        solicitation.setAnalysisComment(
+                request.comment()
+        );
+
+        solicitation.setAnalyzedAt(
+                LocalDateTime.now()
+        );
+
+        solicitation.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+        return solicitationRepository.save(
+                solicitation
+        );
+    }
+    public Solicitation reject(
+            UUID solicitationId,
+            User analyst,
+            AnalysisDecisionDTO request
+    ) {
+
+        Solicitation solicitation = solicitationRepository.findById(solicitationId)
+                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada"));
+
+        if (solicitation.getStatus() != SolicitationStatus.IN_REVIEW) {
+            throw new RuntimeException("A solicitação não está em análise");
+        }
+
+        if (solicitation.getAnalyzedBy() == null ||
+                !solicitation.getAnalyzedBy().getId().equals(analyst.getId())) {
+
+            throw new RuntimeException(
+                    "Somente o analista responsável pode rejeitar"
+            );
+        }
+
+        solicitation.setStatus(
+                SolicitationStatus.REJECTED
+        );
+
+        solicitation.setAnalysisComment(
+                request.comment()
+        );
+
+        solicitation.setAnalyzedAt(
+                LocalDateTime.now()
+        );
+
+        solicitation.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+        return solicitationRepository.save(
+                solicitation
+        );
     }
 }

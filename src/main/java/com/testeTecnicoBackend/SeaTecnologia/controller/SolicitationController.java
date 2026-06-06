@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import com.testeTecnicoBackend.SeaTecnologia.dto.solicitation.Step2RequestDTO;
 import com.testeTecnicoBackend.SeaTecnologia.dto.solicitation.Step3RequestDTO;
+import java.util.List;
+import com.testeTecnicoBackend.SeaTecnologia.dto.solicitation.AnalysisDecisionDTO;
 
 @RestController
 @RequestMapping("/solicitations")
@@ -77,5 +79,58 @@ public class SolicitationController {
         User client = (User) authentication.getPrincipal();
 
         return solicitationService.submit(id, client);
+    }
+    @GetMapping("/my")
+    public List<Solicitation> findMySolicitations(Authentication authentication) {
+        User client = (User) authentication.getPrincipal();
+
+        return solicitationService.findMySolicitations(client);
+    }
+    @GetMapping("/submitted")
+    public List<Solicitation> findSubmittedSolicitations() {
+        return solicitationService.findSubmittedSolicitations();
+    }
+    @PostMapping("/{id}/start-analysis")
+    public Solicitation startAnalysis(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+
+        User analyst = (User) authentication.getPrincipal();
+
+        return solicitationService.startAnalysis(
+                id,
+                analyst
+        );
+    }
+    @PostMapping("/{id}/approve")
+    public Solicitation approve(
+            @PathVariable UUID id,
+            @RequestBody @Valid AnalysisDecisionDTO request,
+            Authentication authentication
+    ) {
+
+        User analyst = (User) authentication.getPrincipal();
+
+        return solicitationService.approve(
+                id,
+                analyst,
+                request
+        );
+    }
+    @PostMapping("/{id}/reject")
+    public Solicitation reject(
+            @PathVariable UUID id,
+            @RequestBody @Valid AnalysisDecisionDTO request,
+            Authentication authentication
+    ) {
+
+        User analyst = (User) authentication.getPrincipal();
+
+        return solicitationService.reject(
+                id,
+                analyst,
+                request
+        );
     }
 }
