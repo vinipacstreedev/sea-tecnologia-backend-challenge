@@ -28,6 +28,12 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
+
+                        .requestMatchers("/solicitations/submitted").hasAnyRole("ANALYST", "ADMIN")
+                        .requestMatchers("/solicitations/*/start-analysis").hasAnyRole("ANALYST", "ADMIN")
+                        .requestMatchers("/solicitations/*/approve").hasAnyRole("ANALYST", "ADMIN")
+                        .requestMatchers("/solicitations/*/reject").hasAnyRole("ANALYST", "ADMIN")
+
                         .anyRequest().authenticated()
                 )
 
